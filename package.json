@@ -46,7 +46,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/sdk": "file:../client-sdk-javascript/packages/client-sdk-nodejs"
+    "@gomomento/sdk": "^1.102.2"
   },
   "engines": {
     "node": ">= 16"

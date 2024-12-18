@@ -14,7 +14,7 @@ import {
   validateSomeCredentialsProvided,
   validateTtlSeconds,
 } from './internal/utils';
-import {mapErrorToUnknownError} from './internal/errors';
+import {mapErrorToAggregationError} from './internal/errors';
 
 export class MultiRegionCacheWriterClient
   implements IMultiRegionCacheWriterClient
@@ -69,7 +69,7 @@ export class MultiRegionCacheWriterClient
       return new MultiRegionCacheSet.Success(responseRecord);
     } catch (error) {
       this.logger.error('Error setting cache item', error);
-      return new MultiRegionCacheSet.Error(mapErrorToUnknownError(error));
+      return new MultiRegionCacheSet.Error(mapErrorToAggregationError(error));
     }
   }
 

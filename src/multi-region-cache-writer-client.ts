@@ -58,8 +58,6 @@ export class MultiRegionCacheWriterClient
     try {
       const responses: RegionalCacheSet.Response[] = await Promise.all(
         this.regions.map(region =>
-          // TODO: debug why this is not working
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.clients[region].set(cacheName, key, value, options)
         )
       );

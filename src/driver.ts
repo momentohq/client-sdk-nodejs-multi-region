@@ -17,7 +17,6 @@ async function main(): Promise<void> {
   const response = await client.set('test-cache', 'key', 'value');
 
   switch (response.type) {
-    // TODO this name doesnt convey
     case MultiRegionCacheSetResponse.Success:
       console.log('Success:', response.results());
       break;

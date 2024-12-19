@@ -1,5 +1,5 @@
 {
-  "name": "@gomomento-poc/sdk-nodejs-multi-region",
+  "name": "@gomomento-poc/sdk-multi-region",
   "version": "0.1.0",
   "description": "Multi-region cache writer client for Momento",
   "main": "dist/src/index.js",

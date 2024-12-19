@@ -49,15 +49,20 @@ export class MultiRegionCacheWriterClient
     }
   }
 
-  private async executeMultiRegionOperation<T, S, E>(
-    cacheOperationFn: (client: ICacheClient) => Promise<T>,
-    isSuccessFn: (response: T) => boolean,
-    successResponseFn: (successes: Record<string, T>) => S,
+  private async executeMultiRegionOperation<T, S, E>({
+    cacheOperationFn,
+    isSuccessFn,
+    successResponseFn,
+    errorResponseFn,
+  }: {
+    cacheOperationFn: (client: ICacheClient) => Promise<T>;
+    isSuccessFn: (response: T) => boolean;
+    successResponseFn: (successes: Record<string, T>) => S;
     errorResponseFn: (
       successes: Record<string, T>,
       errors: Record<string, T>
-    ) => E
-  ): Promise<S | E> {
+    ) => E;
+  }): Promise<S | E> {
     const responses = await Promise.all(
       this.regions.map(region => cacheOperationFn(this.clients[region]))
     );
@@ -86,19 +91,20 @@ export class MultiRegionCacheWriterClient
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<MultiRegionCacheSet.Response> {
-    return await this.executeMultiRegionOperation(
-      client => client.set(cacheName, key, value, options),
-      response => response.type === RegionalCacheSetResponse.Success,
-      successes =>
+    return await this.executeMultiRegionOperation({
+      cacheOperationFn: client => client.set(cacheName, key, value, options),
+      isSuccessFn: response =>
+        response.type === RegionalCacheSetResponse.Success,
+      successResponseFn: successes =>
         new MultiRegionCacheSet.Success(
           successes as Record<string, RegionalCacheSet.Success>
         ),
-      (successes, errors) =>
+      errorResponseFn: (successes, errors) =>
         new MultiRegionCacheSet.Error(
           successes as Record<string, RegionalCacheSet.Success>,
           errors as Record<string, RegionalCacheSet.Error>
-        )
-    );
+        ),
+    });
   }
 
   /**

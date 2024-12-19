@@ -2,26 +2,44 @@ import {
   Configurations,
   CredentialProvider,
   MultiRegionCacheSetResponse,
+  MultiRegionCacheSortedSetPutElementsResponse,
   MultiRegionCacheWriterClient,
 } from '.';
 
 async function main(): Promise<void> {
   const client = new MultiRegionCacheWriterClient({
     credentialProviders: {
-      'us-west-2': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_US_WEST_2'),
-      'us-east-1': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_US_EAST_1'),
+      'region-1': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_REGION_1'),
+      'region-2': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_REGION_2'),
     },
     configuration: Configurations.Laptop.latest(),
     defaultTtlSeconds: 60,
   });
-  const response = await client.set('test-cache', 'key', 'value');
 
-  switch (response.type) {
+  const setResponse = await client.set('test-cache', 'scalar', 'value');
+  switch (setResponse.type) {
     case MultiRegionCacheSetResponse.Success:
-      console.log('Success:', response.results());
+      console.log('Success:', setResponse.results());
       break;
     case MultiRegionCacheSetResponse.Error:
-      console.error('Error:', response.toString());
+      console.error('Error:', setResponse.toString());
+      break;
+  }
+
+  const sortedSetResponse = await client.sortedSetPutElements(
+    'test-cache',
+    'sorted-set',
+    {
+      element1: 1,
+      element2: 2,
+    }
+  );
+  switch (sortedSetResponse.type) {
+    case MultiRegionCacheSortedSetPutElementsResponse.Success:
+      console.log('Success:', sortedSetResponse.results());
+      break;
+    case MultiRegionCacheSortedSetPutElementsResponse.Error:
+      console.error('Error:', sortedSetResponse.toString());
       break;
   }
 }

@@ -22,6 +22,9 @@ import {
   validateTtlSeconds,
 } from './internal/utils';
 
+/**
+ * A client for writing to the same cache in multiple regions.
+ */
 export class MultiRegionCacheWriterClient
   implements IMultiRegionCacheWriterClient
 {
@@ -55,26 +58,38 @@ export class MultiRegionCacheWriterClient
     }
   }
 
-  private async executeMultiRegionOperation<T, S, E>({
+  /**
+   * Executes a multi-region cache operation.
+   *
+   * @typeParam R - The type of the response from the cache operation.
+   * @typeParam S - The type of the response when the operation is successful.
+   * @typeParam E - The type of the response when the operation is not successful.
+   * @param cacheOperationFn - The function that performs the cache operation.
+   * @param isSuccessFn - The function that determines if the response is successful.
+   * @param successResponseFn - The function that creates the successful response.
+   * @param errorResponseFn - The function that creates the error response.
+   * @returns The successful response or the error response.
+   */
+  private async executeMultiRegionOperation<R, S, E>({
     cacheOperationFn,
     isSuccessFn,
     successResponseFn,
     errorResponseFn,
   }: {
-    cacheOperationFn: (client: ICacheClient) => Promise<T>;
-    isSuccessFn: (response: T) => boolean;
-    successResponseFn: (successes: Record<string, T>) => S;
+    cacheOperationFn: (client: ICacheClient) => Promise<R>;
+    isSuccessFn: (response: R) => boolean;
+    successResponseFn: (successes: Record<string, R>) => S;
     errorResponseFn: (
-      successes: Record<string, T>,
-      errors: Record<string, T>
+      successes: Record<string, R>,
+      errors: Record<string, R>
     ) => E;
   }): Promise<S | E> {
     const responses = await Promise.all(
       this.regions.map(region => cacheOperationFn(this.clients[region]))
     );
 
-    const successes: Record<string, T> = {};
-    const errors: Record<string, T> = {};
+    const successes: Record<string, R> = {};
+    const errors: Record<string, R> = {};
 
     responses.forEach((response, index) => {
       if (isSuccessFn(response)) {

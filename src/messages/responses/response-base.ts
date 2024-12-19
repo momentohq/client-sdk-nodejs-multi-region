@@ -1,32 +1,58 @@
-import {MomentoErrorCode, SdkError} from '@gomomento/sdk';
-
 export abstract class ResponseBase {
   public toString(): string {
     return this.constructor.name;
   }
 }
 
-export abstract class BaseResponseError extends ResponseBase {
-  protected readonly _innerException: SdkError;
+/**
+ * A response that includes successful responses only.
+ */
+export class BaseResponseSuccess<S> extends ResponseBase {
+  private readonly responses: Record<string, S>;
 
-  protected constructor(innerException: SdkError) {
+  constructor(responses: Record<string, S>) {
     super();
-    this._innerException = innerException;
+    this.responses = responses;
   }
 
-  public message(): string {
-    return this._innerException.wrappedErrorMessage();
-  }
-
-  public innerException(): SdkError {
-    return this._innerException;
-  }
-
-  public errorCode(): MomentoErrorCode {
-    return this._innerException.errorCode();
+  /**
+   * Get the responses from each region.
+   */
+  public results(): Record<string, S> {
+    return this.responses;
   }
 
   public override toString(): string {
-    return this.message();
+    return `${this.constructor.name}: responses = ${JSON.stringify(
+      this.responses
+    )}`;
+  }
+}
+
+/**
+ * A response that includes both successful and failed responses.
+ */
+export abstract class BaseResponseError<S, E> extends ResponseBase {
+  protected readonly _successes: Record<string, S>;
+  protected readonly _errors: Record<string, E>;
+
+  constructor(successes: Record<string, S>, errors: Record<string, E>) {
+    super();
+    this._successes = successes;
+    this._errors = errors;
+  }
+
+  public successes(): Record<string, S> {
+    return this._successes;
+  }
+
+  public errors(): Record<string, E> {
+    return this._errors;
+  }
+
+  public override toString(): string {
+    return `${this.constructor.name}: successes = ${JSON.stringify(
+      this._successes
+    )}, errors = ${JSON.stringify(this._errors)}`;
   }
 }

@@ -6,6 +6,7 @@ import {
   MomentoLogger,
   SetOptions,
   CacheSet as RegionalCacheSet,
+  CacheSetResponse as RegionalCacheSetResponse,
 } from '@gomomento/sdk';
 import {IMultiRegionCacheWriterClient} from './IMultiRegionCacheWriterClient';
 import {MultiRegionCacheWriterClientProps} from './multi-region-cache-writer-client-props';
@@ -14,7 +15,6 @@ import {
   validateSomeCredentialsProvided,
   validateTtlSeconds,
 } from './internal/utils';
-import {mapErrorToAggregationError} from './internal/errors';
 
 export class MultiRegionCacheWriterClient
   implements IMultiRegionCacheWriterClient
@@ -49,28 +49,56 @@ export class MultiRegionCacheWriterClient
     }
   }
 
+  private async executeMultiRegionOperation<T, S, E>(
+    cacheOperationFn: (client: ICacheClient) => Promise<T>,
+    isSuccessFn: (response: T) => boolean,
+    successResponseFn: (successes: Record<string, T>) => S,
+    errorResponseFn: (
+      successes: Record<string, T>,
+      errors: Record<string, T>
+    ) => E
+  ): Promise<S | E> {
+    const responses = await Promise.all(
+      this.regions.map(region => cacheOperationFn(this.clients[region]))
+    );
+
+    const successes: Record<string, T> = {};
+    const errors: Record<string, T> = {};
+
+    responses.forEach((response, index) => {
+      if (isSuccessFn(response)) {
+        successes[this.regions[index]] = response;
+      } else {
+        errors[this.regions[index]] = response;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      return errorResponseFn(successes, errors);
+    } else {
+      return successResponseFn(successes);
+    }
+  }
+
   public async set(
     cacheName: string,
     key: string | Uint8Array,
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<MultiRegionCacheSet.Response> {
-    try {
-      const responses: RegionalCacheSet.Response[] = await Promise.all(
-        this.regions.map(region =>
-          this.clients[region].set(cacheName, key, value, options)
+    return await this.executeMultiRegionOperation(
+      client => client.set(cacheName, key, value, options),
+      response => response.type === RegionalCacheSetResponse.Success,
+      successes =>
+        new MultiRegionCacheSet.Success(
+          successes as Record<string, RegionalCacheSet.Success>
+        ),
+      (successes, errors) =>
+        new MultiRegionCacheSet.Error(
+          successes as Record<string, RegionalCacheSet.Success>,
+          errors as Record<string, RegionalCacheSet.Error>
         )
-      );
-
-      const responseRecord: Record<string, RegionalCacheSet.Response> = {};
-      responses.forEach((response, index) => {
-        responseRecord[this.regions[index]] = response;
-      });
-      return new MultiRegionCacheSet.Success(responseRecord);
-    } catch (error) {
-      this.logger.error('Error setting cache item', error);
-      return new MultiRegionCacheSet.Error(mapErrorToAggregationError(error));
-    }
+    );
   }
 
   /**

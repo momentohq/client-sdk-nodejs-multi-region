@@ -1,6 +1,6 @@
-import {BaseResponseError, ResponseBase} from '../response-base';
+import {BaseResponseError, BaseResponseSuccess} from '../response-base';
 import {MultiRegionCacheSetResponse} from '../enums';
-import {CacheSet as RegionalCacheSet, SdkError} from '@gomomento/sdk';
+import {CacheSet as RegionalCacheSet} from '@gomomento/sdk';
 
 interface IResponse {
   readonly type: MultiRegionCacheSetResponse;
@@ -9,22 +9,12 @@ interface IResponse {
 /**
  * Indicates a Successful cache set request.
  */
-export class Success extends ResponseBase implements IResponse {
+export class Success
+  extends BaseResponseSuccess<RegionalCacheSet.Success>
+  implements IResponse
+{
   readonly type: MultiRegionCacheSetResponse.Success =
     MultiRegionCacheSetResponse.Success;
-  private readonly responses: Record<string, RegionalCacheSet.Response>;
-
-  constructor(responses: Record<string, RegionalCacheSet.Response>) {
-    super();
-    this.responses = responses;
-  }
-
-  /**
-   * Get the responses from each region.
-   */
-  public results(): Record<string, RegionalCacheSet.Response> {
-    return this.responses;
-  }
 }
 
 /**
@@ -37,11 +27,10 @@ export class Success extends ResponseBase implements IResponse {
  * - `message()` - a human-readable description of the error
  * - `innerException()` - the original error that caused the failure; can be re-thrown.
  */
-export class Error extends BaseResponseError implements IResponse {
-  constructor(_innerException: SdkError) {
-    super(_innerException);
-  }
-
+export class Error
+  extends BaseResponseError<RegionalCacheSet.Success, RegionalCacheSet.Error>
+  implements IResponse
+{
   readonly type: MultiRegionCacheSetResponse.Error =
     MultiRegionCacheSetResponse.Error;
 }

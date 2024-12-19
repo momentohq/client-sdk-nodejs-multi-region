@@ -7,10 +7,16 @@ import {
   SetOptions,
   CacheSet as RegionalCacheSet,
   CacheSetResponse as RegionalCacheSetResponse,
+  CacheSortedSetPutElements as RegionalCacheSortedSetPutElements,
+  CacheSortedSetPutElementsResponse as RegionalCacheSortedSetPutElementsResponse,
+  SortedSetPutElementsOptions,
 } from '@gomomento/sdk';
 import {IMultiRegionCacheWriterClient} from './IMultiRegionCacheWriterClient';
 import {MultiRegionCacheWriterClientProps} from './multi-region-cache-writer-client-props';
-import {MultiRegionCacheSet} from './messages/responses/synchronous';
+import {
+  MultiRegionCacheSet,
+  MultiRegionCacheSortedSetPutElements,
+} from './messages/responses/synchronous';
 import {
   validateSomeCredentialsProvided,
   validateTtlSeconds,
@@ -103,6 +109,40 @@ export class MultiRegionCacheWriterClient
         new MultiRegionCacheSet.Error(
           successes as Record<string, RegionalCacheSet.Success>,
           errors as Record<string, RegionalCacheSet.Error>
+        ),
+    });
+  }
+
+  public async sortedSetPutElements(
+    cacheName: string,
+    sortedSetName: string,
+    elements:
+      | Map<string | Uint8Array, number>
+      | Record<string, number>
+      | Array<[string, number]>,
+    options?: SortedSetPutElementsOptions
+  ): Promise<MultiRegionCacheSortedSetPutElements.Response> {
+    return await this.executeMultiRegionOperation({
+      cacheOperationFn: client =>
+        client.sortedSetPutElements(
+          cacheName,
+          sortedSetName,
+          elements,
+          options
+        ),
+      isSuccessFn: response =>
+        response.type === RegionalCacheSortedSetPutElementsResponse.Success,
+      successResponseFn: successes =>
+        new MultiRegionCacheSortedSetPutElements.Success(
+          successes as Record<string, RegionalCacheSortedSetPutElements.Success>
+        ),
+      errorResponseFn: (successes, errors) =>
+        new MultiRegionCacheSortedSetPutElements.Error(
+          successes as Record<
+            string,
+            RegionalCacheSortedSetPutElements.Success
+          >,
+          errors as Record<string, RegionalCacheSortedSetPutElements.Error>
         ),
     });
   }

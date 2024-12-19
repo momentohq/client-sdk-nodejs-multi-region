@@ -27,7 +27,7 @@
     "typescript": "4.9.5"
   },
   "dependencies": {
-    "@gomomento-poc/sdk-nodejs-multi-region": "file:.."
+    "@gomomento-poc/sdk-multi-region": "file:.."
   },
   "engines": {
     "node": ">=10.4.0"

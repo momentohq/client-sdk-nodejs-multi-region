@@ -11,6 +11,7 @@ export {
   DefaultMomentoLoggerFactory,
   DefaultMomentoLogger,
   DefaultMomentoLoggerLevel,
+  InvalidArgumentError,
   MomentoLogger,
   MomentoLoggerFactory,
   NoopMomentoLogger,

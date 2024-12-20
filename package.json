@@ -15,8 +15,6 @@
   "scripts": {
     "prebuild": "eslint . --ext .ts",
     "test": "jest --maxWorkers 1",
-    "integration-test": "jest integration --maxWorkers 1",
-    "unit-test": "jest unit",
     "lint": "eslint . --ext .ts",
     "format": "eslint . --ext .ts --fix",
     "watch": "tsc -w",

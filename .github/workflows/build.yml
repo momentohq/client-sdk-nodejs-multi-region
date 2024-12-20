@@ -24,6 +24,9 @@ jobs:
         node: [16, 18, 20]
     name: Test on Node ${{ matrix.node }}
     runs-on: ubuntu-latest
+    env:
+      MOMENTO_API_KEY_REGION_1: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
+      MOMENTO_API_KEY_REGION_2: ${{ secrets.ALPHA_TEST_AUTH_TOKEN }}
 
     steps:
       - name: Setup repo
@@ -46,3 +49,5 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Test
+        run: npm run test

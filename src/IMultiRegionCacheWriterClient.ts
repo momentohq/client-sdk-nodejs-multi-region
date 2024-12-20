@@ -54,4 +54,6 @@ export interface IMultiRegionCacheWriterClient {
       | Array<[string, number]>,
     options?: SortedSetPutElementsOptions
   ): Promise<MultiRegionCacheSortedSetPutElements.Response>;
+
+  close(): void;
 }

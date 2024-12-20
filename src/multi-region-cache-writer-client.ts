@@ -172,6 +172,15 @@ export class MultiRegionCacheWriterClient
   public get configuration(): Configuration {
     return this._configuration;
   }
+
+  /**
+   * Closes all the enclosed cache clients.
+   */
+  public close(): void {
+    for (const client of Object.values(this.clients)) {
+      client.close();
+    }
+  }
 }
 
 function getDefaultCacheClientConfiguration(): Configuration {

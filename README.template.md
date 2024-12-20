@@ -4,7 +4,7 @@
 
 ## What and why?
 
-The Momento Node.js Multi-Region Writer Client enables turnkey multi-region write operations uisng the [Momento Node.js SDK](https://github.com/momentohq/client-sdk-javascript). If your application requires cross-region writes to improve availability, reduce latency, or meet geographic data residency requirements, this SDK is designed for you.
+The Momento Node.js Multi-Region Writer Client enables turnkey multi-region write operations uisng the [Momento Node.js SDK](https://github.com/momentohq/client-sdk-javascript). If your application requires cross-region writes to improve availability or reduce latency, this SDK is designed for you.
 
 ## Key Features
 

@@ -6,7 +6,8 @@ import {
   Configurations,
   CreateCache,
   CredentialProvider,
-  DeleteCache,
+  DeleteCacheResponse,
+  ICacheClient,
   MomentoErrorCode,
 } from '@gomomento/sdk';
 import {
@@ -32,7 +33,8 @@ function regionalMomentoClientForTesting(regionEnvVarName: string) {
 }
 
 export function SetupIntegrationTest(): {
-  client: IMultiRegionCacheWriterClient;
+  multiRegionClient: IMultiRegionCacheWriterClient;
+  regionalClients: Record<string, ICacheClient>;
   cacheName: string;
 } {
   const cacheName = testCacheName();
@@ -60,23 +62,37 @@ export function SetupIntegrationTest(): {
     for (const regionEnvVarName of regionEnvVarNames) {
       const momento = regionalMomentoClientForTesting(regionEnvVarName);
       const deleteResponse = await momento.deleteCache(cacheName);
-      if (deleteResponse instanceof DeleteCache.Error) {
+      if (
+        deleteResponse.type === DeleteCacheResponse.Error &&
+        deleteResponse.errorCode() !== MomentoErrorCode.CACHE_NOT_FOUND_ERROR
+      ) {
         throw deleteResponse.innerException();
       }
     }
   });
 
-  const client = new MultiRegionCacheWriterClient({
-    credentialProviders: {
-      'region-1': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_REGION_1'),
-      'region-2': CredentialProvider.fromEnvVar('MOMENTO_API_KEY_REGION_2'),
+  const credentialProviders = regionEnvVarNames.reduce(
+    (acc, envVarName, index) => {
+      acc[`region-${index + 1}`] = CredentialProvider.fromEnvVar(envVarName);
+      return acc;
     },
+    {} as Record<string, CredentialProvider>
+  );
+  const multiRegionClient = new MultiRegionCacheWriterClient({
+    credentialProviders,
     configuration: Configurations.Laptop.latest(),
     defaultTtlSeconds: 60,
   });
 
+  const regionalClients: Record<string, ICacheClient> = {};
+  for (const regionEnvVarName of regionEnvVarNames) {
+    const regionalClient = regionalMomentoClientForTesting(regionEnvVarName);
+    regionalClients[regionEnvVarName] = regionalClient;
+  }
+
   return {
-    client,
+    multiRegionClient,
+    regionalClients,
     cacheName,
   };
 }

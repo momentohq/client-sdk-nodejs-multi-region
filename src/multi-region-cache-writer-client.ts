@@ -22,6 +22,7 @@ import {
   MultiRegionCacheSortedSetPutElements,
 } from './messages/responses/synchronous';
 import {
+  validateSomeClientsProvided,
   validateSomeCredentialsProvided,
   validateTtlSeconds,
 } from './internal/utils';
@@ -38,6 +39,8 @@ export class MultiRegionCacheWriterClient
 
   constructor(props: MultiRegionCacheWriterClientProps) {
     if (this.isPropsFromClients(props)) {
+      validateSomeClientsProvided(props.clients);
+
       this.clients = props.clients;
       this.regions = Object.keys(props.clients);
       this.logger = props.loggerFactory.getLogger(this);

@@ -2,7 +2,11 @@
 export * from './messages/responses';
 export {IMultiRegionCacheWriterClient} from './IMultiRegionCacheWriterClient';
 export {MultiRegionCacheWriterClient} from './multi-region-cache-writer-client';
-export {MultiRegionCacheWriterClientProps} from './multi-region-cache-writer-client-props';
+export {
+  MultiRegionCacheWriterClientProps,
+  MultiRegionCacheWriterClientPropsFromClients,
+  MultiRegionCacheWriterClientPropsFromConfiguration,
+} from './multi-region-cache-writer-client-props';
 
 export {
   Configuration,

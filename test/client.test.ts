@@ -7,7 +7,7 @@ import {
 describe('client-setup', () => {
   it('should throw an exception when no regions are provided', () => {
     expect(() => {
-      new MultiRegionCacheWriterClient({
+      MultiRegionCacheWriterClient.fromConfiguration({
         credentialProviders: {},
         configuration: Configurations.Laptop.latest(),
         defaultTtlSeconds: 60,

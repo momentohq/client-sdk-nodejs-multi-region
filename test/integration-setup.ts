@@ -78,7 +78,7 @@ export function SetupIntegrationTest(): {
     },
     {} as Record<string, CredentialProvider>
   );
-  const multiRegionClient = new MultiRegionCacheWriterClient({
+  const multiRegionClient = MultiRegionCacheWriterClient.fromConfiguration({
     credentialProviders,
     configuration: Configurations.Laptop.latest(),
     defaultTtlSeconds: 60,

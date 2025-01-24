@@ -7,9 +7,12 @@ import {
   SetOptions,
   CacheSet as RegionalCacheSet,
   CacheSetResponse as RegionalCacheSetResponse,
+  CacheDictionarySetField as RegionalCacheDictionarySetField,
+  CacheDictionarySetFieldResponse as RegionalCacheDictionarySetFieldResponse,
   CacheSortedSetPutElements as RegionalCacheSortedSetPutElements,
   CacheSortedSetPutElementsResponse as RegionalCacheSortedSetPutElementsResponse,
   SortedSetPutElementsOptions,
+  DictionarySetFieldOptions,
 } from '@gomomento/sdk';
 import {IMultiRegionCacheWriterClient} from './IMultiRegionCacheWriterClient';
 import {
@@ -19,6 +22,7 @@ import {
 } from './multi-region-cache-writer-client-props';
 import {
   MultiRegionCacheSet,
+  MultiRegionCacheDictionarySetField,
   MultiRegionCacheSortedSetPutElements,
 } from './messages/responses/synchronous';
 import {
@@ -166,6 +170,36 @@ export class MultiRegionCacheWriterClient
         new MultiRegionCacheSet.Error(
           successes as Record<string, RegionalCacheSet.Success>,
           errors as Record<string, RegionalCacheSet.Error>
+        ),
+    });
+  }
+
+  public async dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: DictionarySetFieldOptions
+  ): Promise<MultiRegionCacheDictionarySetField.Response> {
+    return await this.executeMultiRegionOperation({
+      cacheOperationFn: client =>
+        client.dictionarySetField(
+          cacheName,
+          dictionaryName,
+          field,
+          value,
+          options
+        ),
+      isSuccessFn: response =>
+        response.type === RegionalCacheDictionarySetFieldResponse.Success,
+      successResponseFn: successes =>
+        new MultiRegionCacheDictionarySetField.Success(
+          successes as Record<string, RegionalCacheDictionarySetField.Success>
+        ),
+      errorResponseFn: (successes, errors) =>
+        new MultiRegionCacheDictionarySetField.Error(
+          successes as Record<string, RegionalCacheDictionarySetField.Success>,
+          errors as Record<string, RegionalCacheDictionarySetField.Error>
         ),
     });
   }

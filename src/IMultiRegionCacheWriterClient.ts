@@ -1,5 +1,10 @@
-import {SetOptions, SortedSetPutElementsOptions} from '@gomomento/sdk';
 import {
+  DictionarySetFieldOptions,
+  SetOptions,
+  SortedSetPutElementsOptions,
+} from '@gomomento/sdk';
+import {
+  MultiRegionCacheDictionarySetField,
   MultiRegionCacheSet,
   MultiRegionCacheSortedSetPutElements,
 } from './messages/responses/synchronous';
@@ -29,6 +34,30 @@ export interface IMultiRegionCacheWriterClient {
     value: string | Uint8Array,
     options?: SetOptions
   ): Promise<MultiRegionCacheSet.Response>;
+
+  /**
+   * Adds an element to the given dictionary. Creates the dictionary if it does
+   * not already exist.
+   *
+   * @param {string} cacheName - The cache to store the dictionary in.
+   * @param {string} dictionaryName - The dictionary to add to.
+   * @param {string | Uint8Array} field - The field to set.
+   * @param {string | Uint8Array} value - The value to store.
+   * @param {DictionarySetFieldOptions} options
+   * @param {CollectionTtl} [options.ttl] - How the TTL should be managed.
+   * Refreshes the dictionary's TTL using the client's default if this is not
+   * supplied.
+   * @returns {Promise<CacheDictionarySetField.Response>} -
+   * {@link MultiRegionCacheDictionarySetField.Success} on success.
+   * {@link MultiRegionCacheDictionarySetField.Error} on any underlying failure.
+   */
+  dictionarySetField(
+    cacheName: string,
+    dictionaryName: string,
+    field: string | Uint8Array,
+    value: string | Uint8Array,
+    options?: DictionarySetFieldOptions
+  ): Promise<MultiRegionCacheDictionarySetField.Response>;
 
   /**
    * Adds elements to the given sorted set. For any values that already exist, it

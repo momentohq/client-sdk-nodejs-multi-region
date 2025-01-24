@@ -44,7 +44,7 @@
     "uuid": "8.3.2"
   },
   "dependencies": {
-    "@gomomento/sdk": "^1.102.3"
+    "@gomomento/sdk": "^1.106.0"
   },
   "engines": {
     "node": ">= 16"

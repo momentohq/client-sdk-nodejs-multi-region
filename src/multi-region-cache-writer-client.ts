@@ -12,7 +12,11 @@ import {
   SortedSetPutElementsOptions,
 } from '@gomomento/sdk';
 import {IMultiRegionCacheWriterClient} from './IMultiRegionCacheWriterClient';
-import {MultiRegionCacheWriterClientProps} from './multi-region-cache-writer-client-props';
+import {
+  MultiRegionCacheWriterClientProps,
+  MultiRegionCacheWriterClientPropsFromClients,
+  MultiRegionCacheWriterClientPropsFromConfiguration,
+} from './multi-region-cache-writer-client-props';
 import {
   MultiRegionCacheSet,
   MultiRegionCacheSortedSetPutElements,
@@ -29,33 +33,68 @@ export class MultiRegionCacheWriterClient
   implements IMultiRegionCacheWriterClient
 {
   private readonly logger: MomentoLogger;
-  private readonly _configuration: Configuration;
   private readonly clients: Record<string, ICacheClient>;
   private readonly regions: string[];
 
   constructor(props: MultiRegionCacheWriterClientProps) {
-    validateTtlSeconds(props.defaultTtlSeconds);
-    validateSomeCredentialsProvided(props.credentialProviders);
+    if (this.isPropsFromClients(props)) {
+      this.clients = props.clients;
+      this.regions = Object.keys(props.clients);
+      this.logger = props.loggerFactory.getLogger(this);
+    } else {
+      validateTtlSeconds(props.defaultTtlSeconds);
+      validateSomeCredentialsProvided(props.credentialProviders);
 
-    const configuration: Configuration =
-      props.configuration ?? getDefaultCacheClientConfiguration();
-    this._configuration = configuration;
+      const configuration: Configuration =
+        props.configuration ?? getDefaultCacheClientConfiguration();
 
-    this.logger = configuration.getLoggerFactory().getLogger(this);
-    this.logger.debug('Creating Momento MultiRegionCacheWriterClient');
+      this.logger = configuration.getLoggerFactory().getLogger(this);
+      this.logger.debug('Creating Momento MultiRegionCacheWriterClient');
 
-    this.clients = {};
-    this.regions = [];
-    for (const [region, credentialProvider] of Object.entries(
-      props.credentialProviders
-    )) {
-      this.clients[region] = new CacheClient({
-        configuration,
-        credentialProvider,
-        defaultTtlSeconds: props.defaultTtlSeconds,
-      });
-      this.regions.push(region);
+      this.clients = {};
+      this.regions = [];
+      for (const [region, credentialProvider] of Object.entries(
+        props.credentialProviders
+      )) {
+        this.clients[region] = new CacheClient({
+          configuration,
+          credentialProvider,
+          defaultTtlSeconds: props.defaultTtlSeconds,
+        });
+        this.regions.push(region);
+      }
     }
+  }
+
+  /**
+   * Type guard to check if props are from pre-instantiated clients.
+   */
+  private isPropsFromClients(
+    props: MultiRegionCacheWriterClientProps
+  ): props is MultiRegionCacheWriterClientPropsFromClients {
+    return 'clients' in props;
+  }
+
+  /**
+   * Creates a MultiRegionCacheWriterClient from pre-instantiated cache clients.
+   * @param props - The properties to create the MultiRegionCacheWriterClient.
+   * @returns The MultiRegionCacheWriterClient.
+   */
+  public static fromClients(
+    props: MultiRegionCacheWriterClientPropsFromClients
+  ): MultiRegionCacheWriterClient {
+    return new MultiRegionCacheWriterClient(props);
+  }
+
+  /**
+   * Creates a MultiRegionCacheWriterClient from a configuration.
+   * @param props - The properties to create the MultiRegionCacheWriterClient.
+   * @returns The MultiRegionCacheWriterClient.
+   */
+  public static fromConfiguration(
+    props: MultiRegionCacheWriterClientPropsFromConfiguration
+  ): MultiRegionCacheWriterClient {
+    return new MultiRegionCacheWriterClient(props);
   }
 
   /**
@@ -160,17 +199,6 @@ export class MultiRegionCacheWriterClient
           errors as Record<string, RegionalCacheSortedSetPutElements.Error>
         ),
     });
-  }
-
-  /**
-   * Returns the configuration used to create the MultiRegionCacheWriterClient.
-   *
-   * @readonly
-   * @type {Configuration} - The configuration used to create the MultiRegionCacheWriterClient.
-   * @memberof MultiRegionCacheWriterClient
-   */
-  public get configuration(): Configuration {
-    return this._configuration;
   }
 
   /**

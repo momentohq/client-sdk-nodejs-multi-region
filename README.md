@@ -21,8 +21,10 @@ The Momento Node.js Multi-Region Writer Client enables turnkey multi-region writ
 The client is [available on npm.js](https://www.npmjs.com/package/@gomomento-poc/sdk-multi-region). You can install it via:
 
 ```bash
-npm install @gomomento-poc/sdk-multi-region
+npm install @gomomento/sdk @gomomento-poc/sdk-multi-region
 ```
+
+Note that the client requires the Momento Node.js SDK as a peer dependency.
 
 ## Usage
 

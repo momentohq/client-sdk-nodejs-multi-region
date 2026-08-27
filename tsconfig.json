@@ -3,6 +3,8 @@
     "target": "ES2018",
     "module": "commonjs",
     "lib": ["es2018", "dom"],
+    // @types/node 16 predates TS 5.x; its .d.ts does not typecheck under the newer compiler
+    "skipLibCheck": true,
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
